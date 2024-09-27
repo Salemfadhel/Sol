@@ -1,30 +1,35 @@
-const { Connection, Keypair, SystemProgram, Transaction, sendAndConfirmTransaction } = require('@solana/web3.js');
+// تأكد من أنك قد قمت بتثبيت مكتبة @solana/web3.js و @solana/wallet-adapter
+import { Connection, Keypair, PublicKey } from '@solana/web3.js';
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
+import { getPhantomWallet, PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
+import { WalletProvider } from '@solana/wallet-adapter-react';
+import { useEffect } from 'react';
 
-const createToken = async (name, symbol, supply) => {
-    const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
-    const payer = Keypair.generate(); // استخدم مفتاح خاص حقيقي هنا
+const network = WalletAdapterNetwork.Devnet;
+const endpoint = 'https://api.devnet.solana.com';
 
-    // هنا يأتي الكود لإنشاء العملة باستخدام التعليمات البرمجية الصحيحة
-    // مثال توضيحي فقط
-    const transaction = new Transaction().add(
-        SystemProgram.createAccount({
-            fromPubkey: payer.publicKey,
-            newAccountPubkey: /* عنوان العملة */,
-            lamports: /* عدد اللومبرتس */,
-            space: /* المساحة المطلوبة */,
-            programId: /* معرف البرنامج */
-        })
+const App = () => {
+    const wallet = new PhantomWalletAdapter();
+
+    const connectWallet = async () => {
+        try {
+            await wallet.connect();
+            console.log('Wallet connected:', wallet.publicKey.toString());
+        } catch (error) {
+            console.error('Error connecting wallet:', error);
+        }
+    };
+
+    useEffect(() => {
+        connectWallet();
+    }, []);
+
+    return (
+        <div>
+            <h1>ربط المحفظة Solana</h1>
+            <button onClick={connectWallet}>اتصل بالمحفظة</button>
+        </div>
     );
-
-    await sendAndConfirmTransaction(connection, transaction, { signers: [payer] });
 };
 
-// التعامل مع نموذج الإدخال
-document.getElementById('tokenForm').onsubmit = async (event) => {
-    event.preventDefault();
-    const name = document.getElementById('name').value;
-    const symbol = document.getElementById('symbol').value;
-    const supply = document.getElementById('supply').value;
-
-    await createToken(name, symbol, supply);
-};
+export default App;
